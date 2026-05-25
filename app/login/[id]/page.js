@@ -1,10 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
 
 export default function LoginPage({ params }) {
-  const { id } = use(params);
+  const { id } = params;
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

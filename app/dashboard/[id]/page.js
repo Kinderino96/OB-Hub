@@ -4,7 +4,7 @@ import { dashboards } from "../../../lib/dashboards";
 import { verifyToken, getCookieName } from "../../../lib/auth";
 
 export default async function DashboardPage({ params }) {
-  const { id } = await params;
+  const { id } = params;
 
   const dashboard = dashboards.find((d) => d.id === id);
   if (!dashboard) redirect("/");
