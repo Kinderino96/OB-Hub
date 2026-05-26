@@ -1,62 +1,80 @@
-# Dashboard Hub — Deploy su Vercel
+# OB Hub — Dashboard con autenticazione Clerk
 
-## 1. Configura le dashboard
+## Come funziona
 
-Apri `lib/dashboards.js` e modifica l'array con i tuoi dati reali:
+- Gli utenti accedono con **username + password** tramite Clerk
+- Ogni utente vede solo le dashboard a cui ha accesso
+- L'admin gestisce gli utenti dal pannello Clerk senza toccare il codice
+
+---
+
+## 1. Variabili d'ambiente su Vercel
+
+Vai su **Settings → Environment Variables** e aggiungi:
+
+| Nome | Valore |
+|------|--------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_test_...` |
+| `CLERK_SECRET_KEY` | `sk_test_...` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/` |
+
+---
+
+## 2. Aggiungere utenti (da Clerk)
+
+1. Vai su [dashboard.clerk.com](https://dashboard.clerk.com)
+2. Seleziona il progetto **OB Hub**
+3. Clicca su **Users → Create user**
+4. Inserisci username e password
+5. Clicca **Create**
+
+---
+
+## 3. Controllare chi vede cosa
+
+Apri `lib/dashboards.js` e per ogni dashboard imposta `allowedUsers`:
+
+```js
+// Tutti gli utenti loggati possono vedere questa dashboard
+allowedUsers: []
+
+// Solo utenti specifici
+allowedUsers: ["mario", "sara", "luca"]
+
+// Solo un utente
+allowedUsers: ["mario"]
+```
+
+Gli utenti vengono identificati tramite il loro **username** impostato su Clerk.
+
+---
+
+## 4. Aggiungere nuove dashboard
+
+Aggiungi un oggetto in `lib/dashboards.js`:
 
 ```js
 {
-  id: "nome-univoco",          // usato nell'URL: /dashboard/nome-univoco
+  id: "nome-univoco",
   title: "Titolo dashboard",
   description: "Descrizione breve",
-  url: "https://tuo-url.com/file.html",  // URL del file HTML
-  password: "la-tua-password",
+  url: "/nome-file.html",       // file nella cartella public/
   category: "Categoria",
   icon: "📊",
   iconBg: "#e8f5e9",
   iconColor: "#2e7d32",
+  allowedUsers: ["mario"],      // chi può vederla
 }
 ```
 
-## 2. Deploy su Vercel
+Poi carica il file HTML corrispondente nella cartella `public/`.
 
-### Opzione A — da GitHub (consigliata)
+---
 
-1. Carica questa cartella su un repository GitHub (anche privato)
-2. Vai su [vercel.com](https://vercel.com) → **Add New Project**
-3. Importa il repository
-4. Vercel rileva Next.js automaticamente → clicca **Deploy**
+## 5. Deploy su Vercel
 
-### Opzione B — da CLI
-
-```bash
-npm install -g vercel
-vercel login
-vercel --prod
-```
-
-## 3. Variabile d'ambiente (importante per sicurezza)
-
-Nel pannello Vercel → **Settings → Environment Variables**, aggiungi:
-
-| Nome | Valore |
-|------|--------|
-| `SESSION_SECRET` | una stringa casuale lunga almeno 32 caratteri |
-
-Esempio di valore: `xK9#mP2$vL8nQw4rZjY6tH1cA5bE3fG7`
-
-Se non la imposti, il sistema usa la chiave di fallback nel codice (meno sicuro).
-
-## 4. Funzionamento
-
-- **`/`** — hub con tutte le dashboard (🔒 bloccate, 🔓 già sbloccate)
-- **`/login/[id]`** — pagina di login per la singola dashboard
-- **`/dashboard/[id]`** — dashboard protetta (redirect al login se senza sessione)
-
-Le sessioni durano **8 ore** e sono cookie `HttpOnly` — non accessibili da JavaScript.
-Chi tenta di aprire direttamente `/dashboard/[id]` senza aver fatto login
-viene reindirizzato automaticamente alla pagina password.
-
-## 5. Aggiungere/modificare password
-
-Modifica `lib/dashboards.js` e rideploya (su Vercel basta fare push su GitHub).
+1. Carica su GitHub
+2. Importa su Vercel
+3. Aggiungi le variabili d'ambiente
+4. Deploy

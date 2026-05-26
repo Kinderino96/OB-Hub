@@ -1,28 +1,37 @@
-import { cookies } from "next/headers";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { dashboards } from "../../../lib/dashboards";
-import { verifyToken, getCookieName } from "../../../lib/auth";
 
 export default async function DashboardPage({ params }) {
   const { id } = params;
+  const { userId } = auth();
+
+  if (!userId) redirect("/sign-in");
 
   const dashboard = dashboards.find((d) => d.id === id);
   if (!dashboard) redirect("/");
 
-  const cookieStore = cookies();
-  const token = cookieStore.get(getCookieName(id))?.value;
-  if (!token) redirect(`/login/${id}`);
+  const user = await currentUser();
+  const username = user?.username || user?.firstName || user?.emailAddresses?.[0]?.emailAddress || "";
 
-  const payload = await verifyToken(token);
-  if (!payload || payload.dashboardId !== id) redirect(`/login/${id}`);
+  // Controlla permessi
+  if (dashboard.allowedUsers && dashboard.allowedUsers.length > 0) {
+    const hasAccess = dashboard.allowedUsers.includes(username) || dashboard.allowedUsers.includes(userId);
+    if (!hasAccess) redirect("/");
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#f5f4f0" }}>
       {/* topbar */}
       <header style={{
-        background: "#fff", borderBottom: "1px solid #e2e0d8",
-        padding: "0 1.5rem", display: "flex", alignItems: "center",
-        gap: 12, height: 52, flexShrink: 0,
+        background: "#fff",
+        borderBottom: "1px solid #e2e0d8",
+        padding: "0 1.5rem",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        height: 52,
+        flexShrink: 0,
       }}>
         <a href="/" style={{
           display: "flex", alignItems: "center", gap: 6,
@@ -36,24 +45,17 @@ export default async function DashboardPage({ params }) {
 
         <span style={{ color: "#e2e0d8" }}>|</span>
 
-        <div style={{
-          display: "flex", alignItems: "center", gap: 8,
+        <span style={{ fontSize: 18 }}>{dashboard.icon}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#1a1917" }}>{dashboard.title}</span>
+        <span style={{
+          fontSize: 10, padding: "2px 8px", borderRadius: 99,
+          background: dashboard.iconBg, color: dashboard.iconColor,
+          fontFamily: "monospace",
         }}>
-          <span style={{ fontSize: 18 }}>{dashboard.icon}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#1a1917" }}>{dashboard.title}</span>
-          <span style={{
-            fontSize: 10, padding: "2px 8px", borderRadius: 99,
-            background: dashboard.iconBg, color: dashboard.iconColor,
-            fontFamily: "monospace",
-          }}>
-            {dashboard.category}
-          </span>
-        </div>
+          {dashboard.category}
+        </span>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#9e9c96", fontFamily: "monospace" }}>
-            🔓 accesso attivo
-          </span>
+        <div style={{ marginLeft: "auto" }}>
           <a
             href={dashboard.url}
             target="_blank"
