@@ -40,7 +40,6 @@ export default function LoginPage({ params }) {
         border: "1px solid #e2e0d8",
         padding: "2.5rem 2rem", width: "100%", maxWidth: 360,
       }}>
-        {/* logo */}
         <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>🔒</div>
           <h1 style={{ fontSize: 18, fontWeight: 600, color: "#1a1917", margin: 0 }}>
@@ -52,8 +51,7 @@ export default function LoginPage({ params }) {
           <div style={{
             marginTop: 10, display: "inline-block",
             fontSize: 11, padding: "3px 10px", borderRadius: 99,
-            background: "#e8f0fd", color: "#1a4a8a",
-            fontFamily: "monospace",
+            background: "#e8f0fd", color: "#1a4a8a", fontFamily: "monospace",
           }}>
             {id}
           </div>
@@ -76,7 +74,6 @@ export default function LoginPage({ params }) {
                 border: error ? "1px solid #e24b4a" : "1px solid #e2e0d8",
                 borderRadius: 8, fontSize: 14, outline: "none",
                 boxSizing: "border-box", background: "#f5f4f0",
-                transition: "border-color 0.15s",
               }}
             />
           </div>
@@ -99,7 +96,6 @@ export default function LoginPage({ params }) {
               background: loading ? "#b0bec5" : "#1a5fb4",
               color: "#fff", border: "none", borderRadius: 8,
               fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
-              transition: "background 0.15s",
             }}
           >
             {loading ? "Accesso in corso…" : "Accedi"}
